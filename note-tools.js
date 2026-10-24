@@ -91,8 +91,8 @@ function applyNoteAppearance(card, day) {
 }
 
 function saveNoteOptions(card) {
-  // В редакторе меняем черновик; запись произойдёт по кнопке «Сохранить».
-  if (!card.noteDraft) persist();
+  if (card.noteAutosave) card.noteAutosave();
+  else if (!card.noteDraft) persist();
 }
 
 function buildFormatPanel(panel, card, day) {
