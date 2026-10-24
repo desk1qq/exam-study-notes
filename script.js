@@ -1,6 +1,5 @@
 "use strict";
 
-const STORAGE_KEY = "exam-planner-v1";
 const DAY_MS = 86400000;
 const form = document.getElementById("planner-form");
 const nameInput = document.getElementById("exam-name");
@@ -45,9 +44,9 @@ function distribute(tasks, start, end) {
 
 function persist() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    savePlannerState({
       name: nameInput.value, date: dateInput.value, tasks: tasksInput.value, plans: savedPlans
-    }));
+    });
     storageMessage.textContent = "Данные сохранены в этом браузере.";
   } catch {
     storageMessage.textContent = "Браузер не разрешил сохранение. План работает, но после закрытия страницы данные могут потеряться.";
@@ -119,9 +118,8 @@ function validPlan(plan) {
 
 function restore() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
+    const data = loadPlannerState();
+    if (!data) return;
     if (!data || ![data.name, data.date, data.tasks].every(value => typeof value === "string")) throw new Error("Invalid data");
     nameInput.value = data.name;
     dateInput.value = data.date;
