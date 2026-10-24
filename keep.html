@@ -10,6 +10,8 @@
     } catch { document.documentElement.dataset.theme = "light"; }
   </script>
   <link rel="stylesheet" href="keep.css">
+  <link rel="stylesheet" href="note-tools.css">
+  <script src="note-tools.js" defer></script>
   <script src="script.js" defer></script>
   <script src="keep.js" defer></script>
 </head>
@@ -52,6 +54,7 @@
         </form>
       </section>
       <section id="notes" aria-labelledby="notes-title">
+        <p id="reminder-alert" role="status" aria-live="polite" hidden></p>
         <div class="section-heading"><h2 id="notes-title">МОЙ ПЛАН</h2><span>Один день — одна заметка</span></div>
         <p id="plan-summary">Добавьте задачи — разложим подготовку по дням.</p>
         <div id="plan"><p class="empty">Ваши учебные заметки появятся здесь.<br>Начните с экзамена и нескольких задач.</p></div>

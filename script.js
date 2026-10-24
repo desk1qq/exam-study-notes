@@ -55,6 +55,7 @@ function persist() {
 }
 
 function renderPlan() {
+  closeNotePanel();
   planContainer.replaceChildren();
   if (!savedPlans.length) {
     summary.textContent = "Заполните данные и нажмите «Составить план».";
@@ -84,10 +85,12 @@ function renderPlan() {
         list.append(item);
       }
       section.append(list);
+      attachNoteTools(section, day, savedPlan.name);
       fragment.append(section);
     }
   }
   planContainer.append(fragment);
+  checkReminders();
 }
 
 function formatDate(value) {
