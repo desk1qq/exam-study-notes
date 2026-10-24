@@ -1,6 +1,5 @@
 "use strict";
 
-const DAY_MS = 86400000;
 const form = document.getElementById("planner-form");
 const nameInput = document.getElementById("exam-name");
 const dateInput = document.getElementById("exam-date");
@@ -10,24 +9,6 @@ const storageMessage = document.getElementById("storage-message");
 const planContainer = document.getElementById("plan");
 const summary = document.getElementById("plan-summary");
 let savedPlans = [];
-
-// UTC используется только как шкала календарных дней, а не местного времени.
-function calendarDay(value) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
-  const date = new Date(value + "T00:00:00.000Z");
-  if (!Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== value) return NaN;
-  return date.getTime() / DAY_MS;
-}
-
-function todayDay() {
-  const now = new Date();
-  const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  return calendarDay(localDate);
-}
-
-function dateString(day) {
-  return new Date(day * DAY_MS).toISOString().slice(0, 10);
-}
 
 dateInput.min = dateString(todayDay() + 1);
 
@@ -75,18 +56,17 @@ form.addEventListener("input", (event) => {
   persist();
 });
 
-function validatePlannerForm(tasks) {
-  if (!nameInput.value.trim()) {
-    return { text: "Введите название экзамена.", input: nameInput };
-  }
-  const examDay = calendarDay(dateInput.value);
-  if (!Number.isFinite(examDay) || examDay <= todayDay()) {
-    return { text: "Укажите дату экзамена позднее сегодняшнего дня.", input: dateInput };
-  }
-  if (!tasks.length) {
-    return { text: "Добавьте хотя бы одну учебную задачу.", input: tasksInput };
-  }
-  return null;
+function validatePlannerForm() {
+  const validation = validateStudyFields({
+    name: nameInput.value,
+    examDate: dateInput.value,
+    tasksText: tasksInput.value,
+    minimumDay: todayDay(),
+    dateError: "Укажите дату экзамена позднее сегодняшнего дня."
+  });
+  if (!validation.error) return validation;
+  const inputs = { name: nameInput, date: dateInput, tasks: tasksInput };
+  return { error: { ...validation.error, input: inputs[validation.error.field] } };
 }
 
 function showFormError(error) {
@@ -98,15 +78,14 @@ function showFormError(error) {
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
-  const tasks = tasksInput.value.split(/\r?\n/).map(task => task.trim()).filter(Boolean);
   const start = todayDay();
-  const end = calendarDay(dateInput.value);
-  const error = validatePlannerForm(tasks);
-  if (error) {
-    showFormError(error);
+  const validation = validatePlannerForm();
+  if (validation.error) {
+    showFormError(validation.error);
     return;
   }
-  savedPlans.push({ name: nameInput.value.trim(), examDate: dateInput.value, days: distribute(tasks, start, end) });
+  const { name, examDate, examDay, tasks } = validation.value;
+  savedPlans.push({ name, examDate, days: distribute(tasks, start, examDay) });
   form.reset();
   for (const input of form.querySelectorAll("[aria-invalid]")) input.removeAttribute("aria-invalid");
   document.getElementById("search").value = "";

@@ -49,6 +49,8 @@ textarea { resize: vertical; min-height: 88px; line-height: 1.8; margin-bottom: 
 .section-heading { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 h2 { color: #5f6368; font-size: 11px; font-weight: 600; letter-spacing: .1em; margin: 0; }
 .section-heading span { color: #80868b; font-size: 12px; }
+.sort-control { display: flex; align-items: center; gap: 8px; margin-left: auto; font-size: 12px; }
+.sort-control select { padding: 7px 28px 7px 9px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); color: var(--text); }
 #plan-summary { color: #5f6368; font-size: 13px; margin: 10px 0 22px; overflow-wrap: anywhere; }
 #plan { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; align-items: start; }
 .day { border: 1px solid #e2ded4; border-radius: 9px; padding: 20px; background: #fff8b8; overflow-wrap: anywhere; transition: box-shadow .15s; }
@@ -71,6 +73,7 @@ footer { margin-top: 48px; font-size: 11px; color: #80868b; }
 @media (max-width: 1050px) { .workspace { grid-template-columns: 200px minmax(0, 1fr); } .brand { font-size: 17px; } .search { margin-left: 0; } .nav-item { padding-left: 18px; gap: 12px; } main { padding: 28px 22px; } }
 @media (max-width: 760px) { .topbar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; } .brand { flex: 1; } .search { order: 5; flex-basis: 100%; max-width: none; } .workspace { grid-template-columns: minmax(0, 1fr); } aside { padding: 8px 12px; } nav { display: flex; gap: 6px; flex-wrap: wrap; } .nav-item { border-radius: 24px; min-height: 40px; padding: 8px 12px; font-size: 12px; gap: 7px; } .nav-item svg { width: 18px; height: 18px; } .sidebar-caption { display: none; } main { padding: 20px 16px; } .composer { margin-bottom: 32px; padding: 18px 16px 10px; } }
 @media (max-width: 420px) { .exam-fields { grid-template-columns: 1fr; gap: 0; } .composer-bottom { align-items: start; flex-direction: column; gap: 4px; } .primary-button { width: 100%; } .avatar { display: none; } }
+@media (max-width: 560px) { .sort-control { width: 100%; margin-left: 0; justify-content: space-between; } .sort-control select { max-width: 70%; } }
 
 /* Общая палитра интерфейса и обе темы. */
 :root { color-scheme: light; --page: #fff; --surface: #fff; --text: #202124; --muted: #5f6368; --border: #dadce0; --hover: #f1f3f4; --accent: #feefc3; --accent-hover: #fee7a0; --focus: #986400; --success: #386b58; --error: #b3261e; }

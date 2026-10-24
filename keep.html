@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="keep.css">
   <link rel="stylesheet" href="note-tools.css">
   <script src="storage.js" defer></script>
+  <script src="validation.js" defer></script>
   <script src="note-tools.js" defer></script>
   <script src="notes.js" defer></script>
   <script src="script.js" defer></script>
@@ -59,7 +60,7 @@
       </section>
       <section id="notes" aria-labelledby="notes-title">
         <p id="reminder-alert" role="status" aria-live="polite" hidden></p>
-        <div class="section-heading"><h2 id="notes-title">МОЙ ПЛАН</h2><span>Один день — одна заметка</span></div>
+        <div class="section-heading"><h2 id="notes-title">МОЙ ПЛАН</h2><span>План подготовки по дням</span><label class="sort-control" for="sort-notes">Сортировка<select id="sort-notes"><option value="date-asc">Сначала ближайшие</option><option value="date-desc">Сначала поздние</option><option value="name-asc">По названию экзамена</option></select></label></div>
         <p id="plan-summary">Добавьте задачи — разложим подготовку по дням.</p>
         <p id="note-action-status" role="status" aria-live="polite"></p>
         <div id="plan"><p class="empty">Ваши учебные заметки появятся здесь.<br>Начните с экзамена и нескольких задач.</p></div>

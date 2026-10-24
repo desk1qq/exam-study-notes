@@ -2,6 +2,16 @@
 
 let currentNotesView = "active";
 let noteEditor = null;
+const NOTES_SORT_KEY = "exam-planner-sort";
+const NOTES_SORT_VALUES = ["date-asc", "date-desc", "name-asc"];
+let currentNotesSort = "date-asc";
+
+try {
+  const storedSort = localStorage.getItem(NOTES_SORT_KEY);
+  if (NOTES_SORT_VALUES.includes(storedSort)) currentNotesSort = storedSort;
+} catch {
+  // Сортировка продолжает работать без сохранения настройки.
+}
 
 function noteState(day) {
   return day.state === "trash" || day.state === "archive" ? day.state : "active";
@@ -17,6 +27,20 @@ function noteEntries() {
 function noteName(plan, day) { return day.name || plan.name; }
 function noteExamDate(plan, day) { return day.examDate || plan.examDate; }
 
+function sortNoteEntries(entries) {
+  const collator = new Intl.Collator("ru-RU", { sensitivity: "base" });
+  return [...entries].sort((left, right) => {
+    if (currentNotesSort === "name-asc") {
+      const byName = collator.compare(noteName(left.plan, left.day), noteName(right.plan, right.day));
+      if (byName) return byName;
+    }
+    const direction = currentNotesSort === "date-desc" ? -1 : 1;
+    const byDate = calendarDay(left.day.date) - calendarDay(right.day.date);
+    if (byDate) return byDate * direction;
+    return collator.compare(noteName(left.plan, left.day), noteName(right.plan, right.day));
+  });
+}
+
 function switchNotesView(view) {
   currentNotesView = view;
   document.getElementById("search").value = "";
@@ -28,6 +52,14 @@ for (const button of document.querySelectorAll("[data-view]")) {
   button.addEventListener("click", () => switchNotesView(button.dataset.view));
 }
 
+const sortNotes = document.getElementById("sort-notes");
+sortNotes.value = currentNotesSort;
+sortNotes.addEventListener("change", () => {
+  currentNotesSort = NOTES_SORT_VALUES.includes(sortNotes.value) ? sortNotes.value : "date-asc";
+  try { localStorage.setItem(NOTES_SORT_KEY, currentNotesSort); } catch { /* Настройка останется до перезагрузки. */ }
+  renderPlan();
+});
+
 function renderNoteCollection() {
   const titles = { active: "МОЙ ПЛАН", archive: "АРХИВ", trash: "КОРЗИНА" };
   document.getElementById("notes-title").textContent = titles[currentNotesView];
@@ -38,7 +70,7 @@ function renderNoteCollection() {
     if (active) button.setAttribute("aria-current", "page");
     else button.removeAttribute("aria-current");
   }
-  const entries = noteEntries().filter(({ day }) => noteState(day) === currentNotesView);
+  const entries = sortNoteEntries(noteEntries().filter(({ day }) => noteState(day) === currentNotesView));
   summary.textContent = currentNotesView === "trash"
     ? `Заметок: ${entries.length}. Можно восстановить или удалить навсегда. Автоматического удаления нет.`
     : `Заметок: ${entries.length}. Нажмите на карточку, чтобы открыть её.`;
@@ -191,16 +223,21 @@ function openNoteEditor(plan, day) {
   }
   function autosave() {
     clearTimeout(dialog.autosaveTimer);
-    const parsedTasks = tasks.value.split(/\r?\n/).map(text => text.trim()).filter(Boolean);
-    if (!name.value.trim() || !parsedTasks.length) {
-      error.textContent = "Название и хотя бы одна задача обязательны. Последнее корректное состояние сохранено.";
+    const validation = validateStudyFields({
+      name: name.value,
+      examDate: examDate.value,
+      tasksText: tasks.value,
+      minimumDay: calendarDay(day.date),
+      dateError: "Дата экзамена должна быть позднее даты этой заметки. Последнее корректное состояние сохранено."
+    });
+    if (validation.error) {
+      error.textContent = validation.error.field === "date"
+        ? validation.error.text
+        : "Название и хотя бы одна задача обязательны. Последнее корректное состояние сохранено.";
       return false;
     }
-    if (!Number.isFinite(calendarDay(examDate.value)) || calendarDay(day.date) >= calendarDay(examDate.value)) {
-      error.textContent = "Дата экзамена должна быть позднее даты этой заметки. Последнее корректное состояние сохранено.";
-      return false;
-    }
-    Object.assign(day, draft, { name: name.value.trim(), examDate: examDate.value, tasks: parsedTasks });
+    const { name: normalizedName, examDate: normalizedDate, tasks: normalizedTasks } = validation.value;
+    Object.assign(day, draft, { name: normalizedName, examDate: normalizedDate, tasks: normalizedTasks });
     if (!draft.reminder) delete day.reminder;
     error.textContent = "";
     persist();
