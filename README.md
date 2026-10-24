@@ -1,6 +1,6 @@
-# KSU Study Notes — план подготовки к экзаменам
+# Учебные заметки — план подготовки к экзаменам
 
-[![Проверка проекта](https://github.com/desk1qq/ksu-study-notes/actions/workflows/ci.yml/badge.svg)](https://github.com/desk1qq/ksu-study-notes/actions/workflows/ci.yml)
+[![Проверка проекта](https://github.com/desk1qq/exam-study-notes/actions/workflows/ci.yml/badge.svg)](https://github.com/desk1qq/exam-study-notes/actions/workflows/ci.yml)
 
 Локальное веб-приложение распределяет учебные задачи по дням до экзамена. Работает без сервера и сторонних зависимостей, сохраняет заметки только в браузере через `localStorage`.
 
@@ -27,8 +27,8 @@
 Нужен современный Google Chrome или Microsoft Edge. Установка пакетов и сборка не требуются.
 
 ```powershell
-git clone https://github.com/desk1qq/ksu-study-notes.git
-cd ksu-study-notes
+git clone https://github.com/desk1qq/exam-study-notes.git
+cd exam-study-notes
 Start-Process .\keep.html
 ```
 
