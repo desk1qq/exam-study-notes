@@ -1,16 +1,34 @@
 # План подготовки к экзаменам
 
+[![Проверка проекта](https://github.com/desk1qq/ksu-study-notes/actions/workflows/ci.yml/badge.svg)](https://github.com/desk1qq/ksu-study-notes/actions/workflows/ci.yml)
+
 Приложение помогает студенту распределять учебные задачи по дням до экзамена.
 
 ## Запуск
 
 `keep.html` — основной интерфейс в стиле заметок Google Keep: цветные карточки по дням, поиск, боковая панель и переключение между сеткой и списком.
 
+Проект не использует сторонние зависимости, установку пакетов или сборку. Для получения чистой копии и запуска в Windows PowerShell:
+
+```powershell
+git clone https://github.com/desk1qq/ksu-study-notes.git
+cd ksu-study-notes
+Start-Process .\keep.html
+```
+
 Автоматические тесты запускаются одной командой из корня проекта:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tests/run-tests.ps1
 ```
+
+Единая локальная команда, совпадающая с проверкой GitHub Actions:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1
+```
+
+Она проверяет наличие обязательных файлов, отсутствие маркеров незавершённого слияния, загрузку всего приложения и основную логику. Workflow `.github/workflows/ci.yml` запускает эту команду при push в `main` и `feature/ci`, а также для Pull Request в `main`.
 
 В `keep.html` кнопка с луной/солнцем переключает светлую и тёмную темы. Выбор сохраняется отдельно под ключом `exam-planner-theme`. Добавлены плавное появление карточек, реакции кнопок и переходы цветов; при системной настройке уменьшения движения анимации отключены. Поля выделяются рамкой внутри своих границ, без наложения на подписи.
 

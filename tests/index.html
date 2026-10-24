@@ -69,14 +69,36 @@ test("повреждённое хранилище изолируется и не
   assert(localStorage.getItem(PLANNER_STORAGE_KEY + "-corrupt") === broken, "исходная запись не сохранена для диагностики");
 });
 
-const passed = results.filter(item => item.passed).length;
-const failed = results.length - passed;
-const output = [
-  ...results.map(item => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? ": " + item.error : ""}`),
-  `Итого: ${passed} пройдено, ${failed} не пройдено, всего ${results.length}`
-].join("\n");
-const result = document.getElementById("result");
-result.dataset.status = failed ? "failed" : "passed";
-result.textContent = output;
+function finish() {
+  const passed = results.filter(item => item.passed).length;
+  const failed = results.length - passed;
+  const output = [
+    ...results.map(item => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? ": " + item.error : ""}`),
+    `Итого: ${passed} пройдено, ${failed} не пройдено, всего ${results.length}`
+  ].join("\n");
+  const result = document.getElementById("result");
+  result.dataset.status = failed ? "failed" : "passed";
+  result.textContent = output;
+}
+
+const application = document.createElement("iframe");
+application.hidden = true;
+application.addEventListener("load", () => {
+  test("приложение полностью загружается", () => {
+    const appWindow = application.contentWindow;
+    const appDocument = application.contentDocument;
+    assert(typeof appWindow.renderPlan === "function", "основной скрипт не загрузился");
+    assert(typeof appWindow.openNoteEditor === "function", "редактор заметок не загрузился");
+    assert(appDocument.querySelector("#planner-form"), "форма создания плана отсутствует");
+    assert(appDocument.querySelector("#sort-notes"), "элемент сортировки отсутствует");
+  });
+  finish();
+});
+application.addEventListener("error", () => {
+  results.push({ name: "приложение полностью загружается", passed: false, error: "keep.html не загрузился" });
+  finish();
+});
+application.src = "../keep.html";
+document.body.append(application);
 </script>
 </html>

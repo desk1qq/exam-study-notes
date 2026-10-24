@@ -1,0 +1,26 @@
+name: Проверка проекта
+
+on:
+  push:
+    branches:
+      - main
+      - feature/ci
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Браузерные тесты и проверка файлов
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Получить исходный код
+        uses: actions/checkout@v4
+
+      - name: Запустить единую проверку
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1
