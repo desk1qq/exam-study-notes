@@ -10,7 +10,7 @@ const message = document.getElementById("message");
 const storageMessage = document.getElementById("storage-message");
 const planContainer = document.getElementById("plan");
 const summary = document.getElementById("plan-summary");
-let savedPlan = null;
+let savedPlans = [];
 
 // UTC используется только как шкала календарных дней, а не местного времени.
 function calendarDay(value) {
@@ -46,7 +46,7 @@ function distribute(tasks, start, end) {
 function persist() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      name: nameInput.value, date: dateInput.value, tasks: tasksInput.value, plan: savedPlan
+      name: nameInput.value, date: dateInput.value, tasks: tasksInput.value, plans: savedPlans
     }));
     storageMessage.textContent = "Данные сохранены в этом браузере.";
   } catch {
@@ -56,7 +56,7 @@ function persist() {
 
 function renderPlan() {
   planContainer.replaceChildren();
-  if (!savedPlan) {
+  if (!savedPlans.length) {
     summary.textContent = "Заполните данные и нажмите «Составить план».";
     const empty = document.createElement("p");
     empty.className = "empty";
@@ -64,22 +64,28 @@ function renderPlan() {
     planContainer.append(empty);
     return;
   }
-  summary.textContent = `${savedPlan.name} · Экзамен: ${formatDate(savedPlan.examDate)} · Дней с задачами: ${savedPlan.days.length}`;
+  summary.textContent = `Планов: ${savedPlans.length} · Карточек с задачами: ${savedPlans.reduce((total, plan) => total + plan.days.length, 0)}`;
   const fragment = document.createDocumentFragment();
-  for (const day of savedPlan.days) {
-    const section = document.createElement("article");
-    section.className = "day";
-    const heading = document.createElement("h3");
-    heading.textContent = formatDate(day.date);
-    section.append(heading);
-    const list = document.createElement("ol");
-    for (const task of day.tasks) {
-      const item = document.createElement("li");
-      item.textContent = task;
-      list.append(item);
+  for (const savedPlan of savedPlans) {
+    for (const day of savedPlan.days) {
+      const section = document.createElement("article");
+      section.className = "day";
+      const heading = document.createElement("h3");
+      heading.textContent = formatDate(day.date);
+      section.append(heading);
+      const exam = document.createElement("p");
+      exam.className = "card-exam";
+      exam.textContent = `${savedPlan.name} · Экзамен: ${formatDate(savedPlan.examDate)}`;
+      section.append(exam);
+      const list = document.createElement("ol");
+      for (const task of day.tasks) {
+        const item = document.createElement("li");
+        item.textContent = task;
+        list.append(item);
+      }
+      section.append(list);
+      fragment.append(section);
     }
-    section.append(list);
-    fragment.append(section);
   }
   planContainer.append(fragment);
 }
@@ -91,10 +97,8 @@ function formatDate(value) {
 }
 
 form.addEventListener("input", () => {
-  savedPlan = null;
-  message.textContent = "Данные изменены. Нажмите «Составить план».";
+  message.textContent = "";
   message.className = "";
-  renderPlan();
   persist();
 });
 
@@ -118,11 +122,27 @@ form.addEventListener("submit", (event) => {
     invalidInput.focus();
     return;
   }
-  savedPlan = { name: nameInput.value.trim(), examDate: dateInput.value, days: distribute(tasks, start, end) };
+  savedPlans.push({ name: nameInput.value.trim(), examDate: dateInput.value, days: distribute(tasks, start, end) });
+  form.reset();
+  document.getElementById("search").value = "";
   renderPlan();
   persist();
-  message.textContent = "План составлен. Удачной подготовки!";
+  message.textContent = "Задачи добавлены. Можно создать следующий план.";
+  nameInput.focus();
 });
+
+document.getElementById("new-exam").addEventListener("click", () => {
+  form.scrollIntoView({ behavior: "auto", block: "center" });
+  nameInput.focus({ preventScroll: true });
+  message.className = "";
+  message.textContent = "Введите экзамен и задачи для нового плана.";
+});
+
+function validPlan(plan) {
+  return plan && typeof plan.name === "string" && Number.isFinite(calendarDay(plan.examDate)) &&
+    Array.isArray(plan.days) && plan.days.every(day => day &&
+      Number.isFinite(calendarDay(day.date)) && Array.isArray(day.tasks) && day.tasks.every(task => typeof task === "string"));
+}
 
 function restore() {
   try {
@@ -133,14 +153,14 @@ function restore() {
     nameInput.value = data.name;
     dateInput.value = data.date;
     tasksInput.value = data.tasks;
-    const plan = data.plan;
-    if (plan && typeof plan.name === "string" && Number.isFinite(calendarDay(plan.examDate)) &&
-        Array.isArray(plan.days) && plan.days.length && plan.days.every(day => day &&
-          Number.isFinite(calendarDay(day.date)) && Array.isArray(day.tasks) && day.tasks.every(task => typeof task === "string"))) {
-      savedPlan = { ...plan, days: plan.days.filter(day => day.tasks.length > 0) };
-    }
+    const plans = Array.isArray(data.plans) ? data.plans : data.plan ? [data.plan] : [];
+    savedPlans = plans.filter(validPlan)
+      .map(plan => ({ ...plan, days: plan.days.filter(day => day.tasks.length > 0) }))
+      .filter(plan => plan.days.length > 0);
+    // Старый готовый план переносим в коллекцию, освобождая форму.
+    if (!Array.isArray(data.plans) && savedPlans.length) form.reset();
     renderPlan();
-    storageMessage.textContent = "Сохранённые данные восстановлены. Для расчёта от сегодняшнего дня составьте план заново.";
+    storageMessage.textContent = "Сохранённые планы и черновик восстановлены.";
   } catch {
     storageMessage.textContent = "Не удалось прочитать сохранённые данные. Можно составить новый план.";
   }
