@@ -221,8 +221,9 @@ function openNoteEditor(plan, day) {
     attachNoteTools(editorForm, draft);
     editorForm.append(noteElement("p", "note-help", "Изменения сохраняются автоматически. Остальные карточки не изменяются."));
   }
-  function autosave() {
+  function autosave(focusInvalid = false) {
     clearTimeout(dialog.autosaveTimer);
+    for (const input of [name, examDate, tasks]) input.removeAttribute("aria-invalid");
     const validation = validateStudyFields({
       name: name.value,
       examDate: examDate.value,
@@ -231,9 +232,12 @@ function openNoteEditor(plan, day) {
       dateError: "Дата экзамена должна быть позднее даты этой заметки. Последнее корректное состояние сохранено."
     });
     if (validation.error) {
+      const invalidInput = { name, date: examDate, tasks }[validation.error.field];
+      invalidInput.setAttribute("aria-invalid", "true");
       error.textContent = validation.error.field === "date"
         ? validation.error.text
         : "Название и хотя бы одна задача обязательны. Последнее корректное состояние сохранено.";
+      if (focusInvalid) invalidInput.focus();
       return false;
     }
     const { name: normalizedName, examDate: normalizedDate, tasks: normalizedTasks } = validation.value;
@@ -246,10 +250,11 @@ function openNoteEditor(plan, day) {
   }
   function scheduleAutosave() {
     clearTimeout(dialog.autosaveTimer);
+    error.textContent = "Сохраняем изменения…";
     dialog.autosaveTimer = setTimeout(autosave, 250);
   }
   function closeEditor() {
-    autosave();
+    if (!autosave(true)) return;
     closeNoteEditor();
     renderPlan();
   }
