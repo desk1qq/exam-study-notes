@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Учебные заметки — План подготовки</title>
+  <script>
+    try {
+      document.documentElement.dataset.theme = localStorage.getItem("exam-planner-theme") === "dark" ? "dark" : "light";
+    } catch { document.documentElement.dataset.theme = "light"; }
+  </script>
   <link rel="stylesheet" href="keep.css">
   <script src="script.js" defer></script>
   <script src="keep.js" defer></script>
@@ -21,6 +26,7 @@
     <a class="brand" href="keep.html"><span class="brand-icon"><svg aria-hidden="true"><use href="#bulb"/></svg></span><span>Учебные заметки</span></a>
     <label class="search"><svg aria-hidden="true"><use href="#search-icon"/></svg><input id="search" type="search" placeholder="Поиск по задачам и датам" aria-label="Поиск по задачам и датам"></label>
     <button id="view-toggle" class="icon-button" type="button" aria-label="Показать списком" aria-pressed="false" title="Переключить вид"><svg aria-hidden="true"><use href="#grid-icon"/></svg></button>
+    <button id="theme-toggle" class="icon-button" type="button" aria-label="Включить тёмную тему" aria-pressed="false" title="Включить тёмную тему"><svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg><svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></svg></button>
     <span class="avatar" title="Локальный план подготовки" aria-label="Локальный план подготовки">У</span>
   </header>
   <div class="workspace">
@@ -54,6 +60,7 @@
         <p id="no-results" hidden role="status">Ничего не найдено. Попробуйте другое слово.</p>
       </section>
       <footer>В вашем темпе · Только дни с задачами · Без сервера</footer>
+      <p id="theme-status" role="status" aria-live="polite"></p>
     </main>
   </div>
 </body>

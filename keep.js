@@ -4,6 +4,31 @@ const searchInput = document.getElementById("search");
 const viewToggle = document.getElementById("view-toggle");
 const menuToggle = document.getElementById("menu-toggle");
 const noResults = document.getElementById("no-results");
+const themeToggle = document.getElementById("theme-toggle");
+const themeStatus = document.getElementById("theme-status");
+
+function updateThemeButton() {
+  const dark = document.documentElement.dataset.theme === "dark";
+  const label = dark ? "Включить светлую тему" : "Включить тёмную тему";
+  themeToggle.setAttribute("aria-pressed", String(dark));
+  themeToggle.setAttribute("aria-label", label);
+  themeToggle.title = label;
+}
+
+themeToggle.addEventListener("click", () => {
+  const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = theme;
+  updateThemeButton();
+  themeStatus.textContent = "";
+  try {
+    localStorage.setItem("exam-planner-theme", theme);
+  } catch {
+    themeStatus.textContent = "Тема изменена. Браузер не разрешил сохранить выбор после закрытия страницы.";
+  }
+});
+
+updateThemeButton();
+
 function filterNotes() {
   const query = searchInput.value.trim().toLocaleLowerCase("ru-RU");
   const cards = [...planContainer.querySelectorAll(".day")];
