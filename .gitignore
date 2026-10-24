@@ -21,3 +21,4 @@ Desktop.ini
 node_modules/
 dist/
 coverage/
+.qa/
