@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>План подготовки к экзаменам</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">УЧЁБА БЕЗ СПЕШКИ</p>
+      <h1>План подготовки к экзаменам</h1>
+      <p>Разделите большую подготовку на небольшие ежедневные шаги.</p>
+    </header>
+    <div class="layout">
+      <section class="panel" aria-labelledby="settings-title">
+        <h2 id="settings-title">Ваш экзамен</h2>
+        <form id="planner-form" novalidate>
+          <label for="exam-name">Название экзамена</label>
+          <input id="exam-name" type="text" placeholder="Например, математика" required>
+          <label for="exam-date">Дата экзамена</label>
+          <input id="exam-date" type="date" required>
+          <label for="tasks">Учебные задачи</label>
+          <p id="tasks-hint" class="hint">Одна задача на строку. Пустые строки не учитываются.</p>
+          <textarea id="tasks" rows="8" aria-describedby="tasks-hint" placeholder="Повторить производные&#10;Решить задачи на интегралы&#10;Пройти пробный экзамен" required></textarea>
+          <button type="submit">Составить план</button>
+          <p id="message" role="status" aria-live="polite"></p>
+          <p id="storage-message" class="hint" role="status"></p>
+        </form>
+      </section>
+      <section class="panel" aria-labelledby="plan-title">
+        <h2 id="plan-title">Ваш план</h2>
+        <p id="plan-summary" class="hint">Начните с названия экзамена, даты и списка задач.</p>
+        <div id="plan"><p class="empty">Здесь появятся задачи на каждый день.</p></div>
+      </section>
+    </div>
+    <footer>Все задачи равны по трудоёмкости. День экзамена остаётся свободным.</footer>
+  </main>
+</body>
+</html>
