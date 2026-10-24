@@ -22,3 +22,4 @@ node_modules/
 dist/
 coverage/
 .qa/
+.test-output/

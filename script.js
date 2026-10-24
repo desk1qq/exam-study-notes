@@ -113,7 +113,10 @@ function validPlan(plan) {
 function restore() {
   try {
     const data = loadPlannerState();
-    if (!data) return;
+    if (!data) {
+      if (plannerStorageWarning) storageMessage.textContent = plannerStorageWarning;
+      return;
+    }
     if (!data || ![data.name, data.date, data.tasks].every(value => typeof value === "string")) throw new Error("Invalid data");
     nameInput.value = data.name;
     dateInput.value = data.date;

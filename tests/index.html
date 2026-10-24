@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<title>Автотесты KSU Study Notes</title>
+<script src="../validation.js"></script>
+<script src="../storage.js"></script>
+<pre id="result">RUNNING</pre>
+<script>
+"use strict";
+
+const results = [];
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function test(name, action) {
+  try {
+    action();
+    results.push({ name, passed: true });
+  } catch (error) {
+    results.push({ name, passed: false, error: error.message });
+  }
+}
+
+test("корректные данные нормализуются", () => {
+  const result = validateStudyFields({
+    name: "  Математика  ",
+    examDate: "2027-06-10",
+    tasksText: " Формулы \n\n Решить вариант ",
+    minimumDay: calendarDay("2027-06-01"),
+    dateError: "Некорректная дата"
+  });
+  assert(!result.error, "корректные данные отклонены");
+  assert(result.value.name === "Математика", "название не очищено");
+  assert(result.value.tasks.join("|") === "Формулы|Решить вариант", "задачи разобраны неверно");
+});
+
+test("дата на границе диапазона отклоняется", () => {
+  const result = validateStudyFields({
+    name: "Физика",
+    examDate: "2027-06-01",
+    tasksText: "Повторить законы",
+    minimumDay: calendarDay("2027-06-01"),
+    dateError: "Экзамен должен быть позже"
+  });
+  assert(result.error?.field === "date", "граничная дата принята");
+  assert(result.error.text === "Экзамен должен быть позже", "получено неверное сообщение");
+});
+
+test("пустой список задач отклоняется", () => {
+  const result = validateStudyFields({
+    name: "История",
+    examDate: "2027-06-10",
+    tasksText: "  \n\t\n  ",
+    minimumDay: calendarDay("2027-06-01"),
+    dateError: "Некорректная дата"
+  });
+  assert(result.error?.field === "tasks", "пустые задачи приняты");
+});
+
+test("повреждённое хранилище изолируется и не ломает запуск", () => {
+  const broken = "{неполный json";
+  localStorage.setItem(PLANNER_STORAGE_KEY, broken);
+  localStorage.removeItem(PLANNER_STORAGE_KEY + "-corrupt");
+  const restored = loadPlannerState();
+  assert(restored === null, "повреждённая запись не должна восстанавливаться");
+  assert(localStorage.getItem(PLANNER_STORAGE_KEY) === null, "повреждённый основной ключ не очищен");
+  assert(localStorage.getItem(PLANNER_STORAGE_KEY + "-corrupt") === broken, "исходная запись не сохранена для диагностики");
+});
+
+const passed = results.filter(item => item.passed).length;
+const failed = results.length - passed;
+const output = [
+  ...results.map(item => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? ": " + item.error : ""}`),
+  `Итого: ${passed} пройдено, ${failed} не пройдено, всего ${results.length}`
+].join("\n");
+const result = document.getElementById("result");
+result.dataset.status = failed ? "failed" : "passed";
+result.textContent = output;
+</script>
+</html>
