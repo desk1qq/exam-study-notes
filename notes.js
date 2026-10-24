@@ -223,16 +223,21 @@ function openNoteEditor(plan, day) {
   }
   function autosave() {
     clearTimeout(dialog.autosaveTimer);
-    const parsedTasks = tasks.value.split(/\r?\n/).map(text => text.trim()).filter(Boolean);
-    if (!name.value.trim() || !parsedTasks.length) {
-      error.textContent = "Название и хотя бы одна задача обязательны. Последнее корректное состояние сохранено.";
+    const validation = validateStudyFields({
+      name: name.value,
+      examDate: examDate.value,
+      tasksText: tasks.value,
+      minimumDay: calendarDay(day.date),
+      dateError: "Дата экзамена должна быть позднее даты этой заметки. Последнее корректное состояние сохранено."
+    });
+    if (validation.error) {
+      error.textContent = validation.error.field === "date"
+        ? validation.error.text
+        : "Название и хотя бы одна задача обязательны. Последнее корректное состояние сохранено.";
       return false;
     }
-    if (!Number.isFinite(calendarDay(examDate.value)) || calendarDay(day.date) >= calendarDay(examDate.value)) {
-      error.textContent = "Дата экзамена должна быть позднее даты этой заметки. Последнее корректное состояние сохранено.";
-      return false;
-    }
-    Object.assign(day, draft, { name: name.value.trim(), examDate: examDate.value, tasks: parsedTasks });
+    const { name: normalizedName, examDate: normalizedDate, tasks: normalizedTasks } = validation.value;
+    Object.assign(day, draft, { name: normalizedName, examDate: normalizedDate, tasks: normalizedTasks });
     if (!draft.reminder) delete day.reminder;
     error.textContent = "";
     persist();
