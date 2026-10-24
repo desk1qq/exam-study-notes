@@ -12,6 +12,9 @@ button { cursor: pointer; }
 .icon-button:hover { background: #f1f3f4; }
 .brand { display: flex; align-items: center; gap: 12px; color: #5f6368; font-size: 21px; text-decoration: none; white-space: nowrap; }
 .brand-icon { display: grid; place-items: center; width: 36px; height: 42px; background: #fbbc04; color: #fff; border-radius: 8px; }
+.brand-wordmark { display: flex; flex-direction: column; gap: 3px; line-height: 1.2; }
+.brand-prefix { color: #8a6200; font-size: 9px; font-weight: 700; letter-spacing: .24em; line-height: 1; }
+[data-theme="dark"] .brand-prefix { color: #f6ce72; }
 .search { margin-left: 24px; display: flex; align-items: center; gap: 16px; background: #f1f3f4; border-radius: 8px; padding: 12px 18px; max-width: 650px; flex: 1; color: #5f6368; }
 .search input { width: 100%; min-width: 0; border: 0; outline: none; background: transparent; color: #202124; font-size: 16px; }
 .search:focus-within { background: white; box-shadow: 0 1px 6px #0003; }
