@@ -1,6 +1,5 @@
 "use strict";
 
-const STORAGE_KEY = "exam-planner-v1";
 const DAY_MS = 86400000;
 const form = document.getElementById("planner-form");
 const nameInput = document.getElementById("exam-name");
@@ -30,6 +29,8 @@ function dateString(day) {
   return new Date(day * DAY_MS).toISOString().slice(0, 10);
 }
 
+dateInput.min = dateString(todayDay() + 1);
+
 function distribute(tasks, start, end) {
   const days = end - start;
   const base = Math.floor(tasks.length / days);
@@ -45,9 +46,9 @@ function distribute(tasks, start, end) {
 
 function persist() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    savePlannerState({
       name: nameInput.value, date: dateInput.value, tasks: tasksInput.value, plans: savedPlans
-    }));
+    });
     storageMessage.textContent = "Данные сохранены в этом браузере.";
   } catch {
     storageMessage.textContent = "Браузер не разрешил сохранение. План работает, но после закрытия страницы данные могут потеряться.";
@@ -67,34 +68,47 @@ function formatDate(value) {
   }).format(new Date(calendarDay(value) * DAY_MS));
 }
 
-form.addEventListener("input", () => {
+form.addEventListener("input", (event) => {
+  event.target.removeAttribute("aria-invalid");
   message.textContent = "";
   message.className = "";
   persist();
 });
+
+function validatePlannerForm(tasks) {
+  if (!nameInput.value.trim()) {
+    return { text: "Введите название экзамена.", input: nameInput };
+  }
+  const examDay = calendarDay(dateInput.value);
+  if (!Number.isFinite(examDay) || examDay <= todayDay()) {
+    return { text: "Укажите дату экзамена позднее сегодняшнего дня.", input: dateInput };
+  }
+  if (!tasks.length) {
+    return { text: "Добавьте хотя бы одну учебную задачу.", input: tasksInput };
+  }
+  return null;
+}
+
+function showFormError(error) {
+  message.className = "error";
+  message.textContent = error.text;
+  error.input.setAttribute("aria-invalid", "true");
+  error.input.focus();
+}
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const tasks = tasksInput.value.split(/\r?\n/).map(task => task.trim()).filter(Boolean);
   const start = todayDay();
   const end = calendarDay(dateInput.value);
-  let error = "";
-  let invalidInput = null;
-  if (!nameInput.value.trim()) {
-    error = "Введите название экзамена."; invalidInput = nameInput;
-  } else if (!Number.isFinite(end) || end <= start) {
-    error = "Укажите дату экзамена позднее сегодняшнего дня."; invalidInput = dateInput;
-  } else if (!tasks.length) {
-    error = "Добавьте хотя бы одну учебную задачу."; invalidInput = tasksInput;
-  }
-  message.className = error ? "error" : "";
+  const error = validatePlannerForm(tasks);
   if (error) {
-    message.textContent = error;
-    invalidInput.focus();
+    showFormError(error);
     return;
   }
   savedPlans.push({ name: nameInput.value.trim(), examDate: dateInput.value, days: distribute(tasks, start, end) });
   form.reset();
+  for (const input of form.querySelectorAll("[aria-invalid]")) input.removeAttribute("aria-invalid");
   document.getElementById("search").value = "";
   currentNotesView = "active";
   renderPlan();
@@ -119,9 +133,8 @@ function validPlan(plan) {
 
 function restore() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
+    const data = loadPlannerState();
+    if (!data) return;
     if (!data || ![data.name, data.date, data.tasks].every(value => typeof value === "string")) throw new Error("Invalid data");
     nameInput.value = data.name;
     dateInput.value = data.date;
