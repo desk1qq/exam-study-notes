@@ -58,6 +58,16 @@
 #note-action-status:empty { display: none; }
 .note-editor { padding: 0; width: min(620px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); border: 1px solid var(--border); border-radius: 14px; color: var(--text); background: var(--surface); box-shadow: 0 20px 80px #0006; }
 .note-editor::backdrop { background: #0008; backdrop-filter: blur(2px); }
+.note-editor[open] { animation: note-open .24s cubic-bezier(.2, .8, .2, 1); }
+.note-editor[open]::backdrop { animation: note-backdrop-in .24s ease-out; }
+@keyframes note-open {
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes note-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .note-editor[open], .note-editor[open]::backdrop { animation: none; }
+}
 .note-editor-form { padding: 24px; }
 .note-editor h2 { margin: 0 0 20px; font-size: 19px; letter-spacing: 0; color: var(--text); }
 .editor-field { margin: 0 0 16px; }
