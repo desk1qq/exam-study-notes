@@ -35,7 +35,7 @@ function distribute(tasks, start, end) {
   const base = Math.floor(tasks.length / days);
   const extra = tasks.length % days;
   let offset = 0;
-  return Array.from({ length: days }, (_, index) => {
+  return Array.from({ length: Math.min(days, tasks.length) }, (_, index) => {
     const count = base + (index < extra ? 1 : 0);
     const entry = { date: dateString(start + index), tasks: tasks.slice(offset, offset + count) };
     offset += count;
@@ -64,7 +64,7 @@ function renderPlan() {
     planContainer.append(empty);
     return;
   }
-  summary.textContent = `${savedPlan.name} · Экзамен: ${formatDate(savedPlan.examDate)} · Дней подготовки: ${savedPlan.days.length}`;
+  summary.textContent = `${savedPlan.name} · Экзамен: ${formatDate(savedPlan.examDate)} · Дней с задачами: ${savedPlan.days.length}`;
   const fragment = document.createDocumentFragment();
   for (const day of savedPlan.days) {
     const section = document.createElement("article");
@@ -78,14 +78,7 @@ function renderPlan() {
       item.textContent = task;
       list.append(item);
     }
-    if (day.tasks.length) {
-      section.append(list);
-    } else {
-      const free = document.createElement("p");
-      free.className = "hint";
-      free.textContent = "Свободный день — можно отдохнуть или повторить материал.";
-      section.append(free);
-    }
+    section.append(list);
     fragment.append(section);
   }
   planContainer.append(fragment);
@@ -144,7 +137,7 @@ function restore() {
     if (plan && typeof plan.name === "string" && Number.isFinite(calendarDay(plan.examDate)) &&
         Array.isArray(plan.days) && plan.days.length && plan.days.every(day => day &&
           Number.isFinite(calendarDay(day.date)) && Array.isArray(day.tasks) && day.tasks.every(task => typeof task === "string"))) {
-      savedPlan = plan;
+      savedPlan = { ...plan, days: plan.days.filter(day => day.tasks.length > 0) };
     }
     renderPlan();
     storageMessage.textContent = "Сохранённые данные восстановлены. Для расчёта от сегодняшнего дня составьте план заново.";
