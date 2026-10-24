@@ -92,6 +92,22 @@ application.addEventListener("load", () => {
     assert(appDocument.querySelector("#planner-form"), "форма создания плана отсутствует");
     assert(appDocument.querySelector("#sort-notes"), "элемент сортировки отсутствует");
   });
+  test("сквозной сценарий создания и поиска работает", () => {
+    const appDocument = application.contentDocument;
+    const future = new Date();
+    future.setDate(future.getDate() + 7);
+    const futureDate = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, "0")}-${String(future.getDate()).padStart(2, "0")}`;
+    appDocument.querySelector("#exam-name").value = "Математика";
+    appDocument.querySelector("#exam-date").value = futureDate;
+    appDocument.querySelector("#tasks").value = "Повторить формулы\nРешить вариант";
+    appDocument.querySelector("#planner-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    const card = appDocument.querySelector(".day");
+    assert(card, "после отправки формы заметка не появилась");
+    const search = appDocument.querySelector("#search");
+    search.value = "Математика";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    assert([...appDocument.querySelectorAll(".day")].some(item => !item.hidden && item.textContent.includes("Математика")), "созданная заметка не находится поиском");
+  });
   finish();
 });
 application.addEventListener("error", () => {
