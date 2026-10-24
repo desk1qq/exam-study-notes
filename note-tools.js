@@ -59,7 +59,7 @@ function openNotePanel(trigger, title, build) {
   header.append(noteElement("strong", "", title), noteButton("Закрыть", "×", () => closeNotePanel(true)));
   notePanel.append(header);
   build(notePanel);
-  document.body.append(notePanel);
+  (trigger.closest("dialog") || document.body).append(notePanel);
   const rect = trigger.getBoundingClientRect();
   const width = notePanel.offsetWidth;
   const height = notePanel.offsetHeight;
@@ -81,13 +81,18 @@ window.addEventListener("scroll", event => {
 
 function applyNoteAppearance(card, day) {
   const format = day.format || {};
-  const list = card.querySelector("ol");
+  const list = card.querySelector(".note-text") || card.querySelector("ol");
   list.style.fontSize = format.size === "h1" ? "22px" : format.size === "h2" ? "18px" : "14px";
   list.style.fontWeight = format.bold ? "700" : "400";
   list.style.fontStyle = format.italic ? "italic" : "normal";
   list.style.textDecoration = format.underline ? "underline" : "none";
   card.dataset.color = NOTE_COLORS.some(([key]) => key === day.color) ? day.color : "default";
   card.dataset.pattern = NOTE_PATTERNS.some(([key]) => key === day.pattern) ? day.pattern : "none";
+}
+
+function saveNoteOptions(card) {
+  // В редакторе меняем черновик; запись произойдёт по кнопке «Сохранить».
+  if (!card.noteDraft) persist();
 }
 
 function buildFormatPanel(panel, card, day) {
@@ -108,12 +113,12 @@ function buildFormatPanel(panel, card, day) {
       day.format = { ...(day.format || {}) };
       if (["h1", "h2", "normal"].includes(key)) day.format.size = key;
       else day.format[key] = !day.format[key];
-      refresh(); persist();
+      refresh(); saveNoteOptions(card);
     });
     button.dataset.format = key;
     controls.push([key, button]); row.append(button);
   }
-  row.append(noteButton("Убрать форматирование", "Tx", () => { day.format = {}; refresh(); persist(); }));
+  row.append(noteButton("Убрать форматирование", "Tx", () => { day.format = {}; refresh(); saveNoteOptions(card); }));
   panel.append(row);
   refresh();
 }
@@ -128,7 +133,7 @@ function buildBackgroundPanel(panel, card, day) {
         day[property] = key;
         applyNoteAppearance(card, day);
         for (const [value, control] of controls) control.setAttribute("aria-pressed", String(value === key));
-        persist();
+        saveNoteOptions(card);
       });
       button.classList.add("swatch");
       button.dataset[property] = key;
@@ -156,7 +161,7 @@ function buildReminderPanel(panel, card, day) {
       error.textContent = "Выберите дату и время в будущем."; return;
     }
     day.reminder = date.toISOString();
-    persist(); updateReminderBadge(card, day); checkReminders(); closeNotePanel(true);
+    saveNoteOptions(card); updateReminderBadge(card, day); checkReminders(); closeNotePanel(true);
   }
   for (const [kind, label, time] of [["today", "Сегодня", "18:00"], ["tomorrow", "Завтра", "08:00"], ["week", "На следующей неделе", "пн, 08:00"]]) {
     const date = reminderPreset(kind);
@@ -172,13 +177,14 @@ function buildReminderPanel(panel, card, day) {
   const actions = noteElement("div", "reminder-actions");
   actions.append(noteButton("Сохранить напоминание", "Сохранить", () => save(new Date(input.value))));
   if (day.reminder) actions.append(noteButton("Удалить напоминание", "Удалить", () => {
-    delete day.reminder; persist(); updateReminderBadge(card, day); checkReminders(); closeNotePanel(true);
+    delete day.reminder; saveNoteOptions(card); updateReminderBadge(card, day); checkReminders(); closeNotePanel(true);
   }));
   panel.append(actions, error);
 }
 
 function updateReminderBadge(card, day) {
   const badge = card.querySelector(".note-reminder");
+  if (!badge || !day) return;
   const stamp = Date.parse(day.reminder);
   badge.hidden = !Number.isFinite(stamp);
   if (!Number.isFinite(stamp)) return;
@@ -207,7 +213,7 @@ function attachNoteTools(card, day) {
 function checkReminders() {
   const due = [];
   for (const plan of savedPlans) for (const day of plan.days) {
-    if (Date.parse(day.reminder) <= Date.now()) due.push(`${plan.name}: ${day.tasks.join(", ")}`);
+    if (day.state !== "trash" && Date.parse(day.reminder) <= Date.now()) due.push(`${day.name || plan.name}: ${day.tasks.join(", ")}`);
   }
   const banner = document.getElementById("reminder-alert");
   const text = due.length ? "Пора заняться подготовкой! " + due.join(" · ") : "";

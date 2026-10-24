@@ -57,39 +57,7 @@ function persist() {
 function renderPlan() {
   closeNotePanel();
   planContainer.replaceChildren();
-  if (!savedPlans.length) {
-    summary.textContent = "Заполните данные и нажмите «Составить план».";
-    const empty = document.createElement("p");
-    empty.className = "empty";
-    empty.textContent = "Здесь появятся задачи на каждый день.";
-    planContainer.append(empty);
-    return;
-  }
-  summary.textContent = `Планов: ${savedPlans.length} · Карточек с задачами: ${savedPlans.reduce((total, plan) => total + plan.days.length, 0)}`;
-  const fragment = document.createDocumentFragment();
-  for (const savedPlan of savedPlans) {
-    for (const day of savedPlan.days) {
-      const section = document.createElement("article");
-      section.className = "day";
-      const heading = document.createElement("h3");
-      heading.textContent = formatDate(day.date);
-      section.append(heading);
-      const exam = document.createElement("p");
-      exam.className = "card-exam";
-      exam.textContent = `${savedPlan.name} · Экзамен: ${formatDate(savedPlan.examDate)}`;
-      section.append(exam);
-      const list = document.createElement("ol");
-      for (const task of day.tasks) {
-        const item = document.createElement("li");
-        item.textContent = task;
-        list.append(item);
-      }
-      section.append(list);
-      attachNoteTools(section, day, savedPlan.name);
-      fragment.append(section);
-    }
-  }
-  planContainer.append(fragment);
+  renderNoteCollection();
   checkReminders();
 }
 
@@ -128,6 +96,7 @@ form.addEventListener("submit", (event) => {
   savedPlans.push({ name: nameInput.value.trim(), examDate: dateInput.value, days: distribute(tasks, start, end) });
   form.reset();
   document.getElementById("search").value = "";
+  currentNotesView = "active";
   renderPlan();
   persist();
   message.textContent = "Задачи добавлены. Можно создать следующий план.";
@@ -135,6 +104,7 @@ form.addEventListener("submit", (event) => {
 });
 
 document.getElementById("new-exam").addEventListener("click", () => {
+  switchNotesView("active");
   form.scrollIntoView({ behavior: "auto", block: "center" });
   nameInput.focus({ preventScroll: true });
   message.className = "";
@@ -170,3 +140,4 @@ function restore() {
 }
 
 restore();
+renderPlan();

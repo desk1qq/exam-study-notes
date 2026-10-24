@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="keep.css">
   <link rel="stylesheet" href="note-tools.css">
   <script src="note-tools.js" defer></script>
+  <script src="notes.js" defer></script>
   <script src="script.js" defer></script>
   <script src="keep.js" defer></script>
 </head>
@@ -33,8 +34,10 @@
   <div class="workspace">
     <aside id="sidebar">
       <nav aria-label="Разделы">
-        <a class="nav-item active" href="#notes" aria-current="page"><svg aria-hidden="true"><use href="#bulb"/></svg>План подготовки</a>
+        <button class="nav-item active" type="button" data-view="active" aria-current="page"><svg aria-hidden="true"><use href="#bulb"/></svg>План подготовки</button>
         <button id="new-exam" class="nav-item" type="button"><svg aria-hidden="true"><use href="#calendar-icon"/></svg>Новый экзамен</button>
+        <button class="nav-item" type="button" data-view="archive"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v13H4zM3 3h18v5H3zM9 12h6"/></svg>Архив</button>
+        <button class="nav-item" type="button" data-view="trash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg>Корзина</button>
       </nav>
       <p class="sidebar-caption">Маленькие шаги.<br>Большой результат.</p>
     </aside>
@@ -57,6 +60,7 @@
         <p id="reminder-alert" role="status" aria-live="polite" hidden></p>
         <div class="section-heading"><h2 id="notes-title">МОЙ ПЛАН</h2><span>Один день — одна заметка</span></div>
         <p id="plan-summary">Добавьте задачи — разложим подготовку по дням.</p>
+        <p id="note-action-status" role="status" aria-live="polite"></p>
         <div id="plan"><p class="empty">Ваши учебные заметки появятся здесь.<br>Начните с экзамена и нескольких задач.</p></div>
         <p id="no-results" hidden role="status">Ничего не найдено. Попробуйте другое слово.</p>
       </section>

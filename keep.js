@@ -40,6 +40,9 @@ function filterNotes() {
     if (!card.hidden) visible += 1;
   }
   noResults.hidden = !query || cards.length === 0 || visible > 0;
+  for (const heading of planContainer.querySelectorAll(".note-group-title")) {
+    heading.hidden = !cards.some(card => card.dataset.group === heading.dataset.group && !card.hidden);
+  }
 }
 
 searchInput.addEventListener("input", filterNotes);
